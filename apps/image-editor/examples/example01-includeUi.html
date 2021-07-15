@@ -47,8 +47,13 @@
             path: 'img/sampleImage2.png',
             name: 'SampleImage',
           },
-          theme: blackTheme, // or whiteTheme
+          theme: {
+            'common.bisize.width': 'auto',
+            'common.bi.image': 'https://uicdn.toast.com/toastui/img/tui-image-editor-bi.png',
+            'downloadButton.display': 'none',
+          }, // or whiteTheme
           initMenu: 'filter',
+
           menuBarPosition: 'bottom',
         },
         cssMaxWidth: 700,
@@ -58,6 +63,46 @@
       window.onresize = function () {
         imageEditor.ui.resizeEditor();
       };
+
+
+      const resetLoadBtn = () => {
+        const loadBtn = document.querySelector('.tui-image-editor-header-buttons .tui-image-editor-load-btn')
+        const inputEl = document.createElement('input')
+        inputEl.setAttribute('type', 'file')
+        inputEl.setAttribute('class', 'tui-image-editor-load-btn custom')
+
+        loadBtn.replaceWith(inputEl)
+
+        inputEl.addEventListener('change', (e) => {
+          const file = e.target.files[0]
+          e.preventDefault()
+          e.stopPropagation();
+          imageEditor.ui.initializeImgUrl = URL.createObjectURL(file);
+          imageEditor.loadImageFromFile(file)
+              .then((sizeValue) => {
+                imageEditor.clearUndoStack();
+                imageEditor.ui.activeMenuEvent();
+                imageEditor.ui.resizeEditor({ imageSize: sizeValue });
+                imageEditor._clearHistory();
+                console.log('load envent', file);
+                imageEditor._invoker.fire('executeCommand', 'Load');
+              }).then(() => {
+              
+                const evt = document.createEvent('MouseEvents');
+                evt.initEvent('click', true, false);
+                document.querySelector('.tie-btn-crop').dispatchEvent(evt);
+
+                const evt2 = document.createEvent('MouseEvents');
+                evt2.initEvent('click', true, false);
+                document.querySelector('.preset-square').dispatchEvent(evt2);
+
+              })
+              ['catch']((message) => Promise.reject(message));
+        })
+      }
+
+      resetLoadBtn()
+
     </script>
   </body>
 </html>
